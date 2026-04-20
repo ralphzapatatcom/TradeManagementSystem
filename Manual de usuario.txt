@@ -1,0 +1,63 @@
+Manual de Usuario: Trade Management System
+1. Introducción
+El Trade Management System es una herramienta integral diseñada para la gestión comercial. Permite controlar el flujo de productos, gestionar clientes, registrar ventas detalladas y supervisar el arqueo de caja diario.
+
+2. Inicio de Sesión
+El sistema utiliza un control de acceso basado en roles para garantizar la seguridad.
+
+Roles Disponibles:
+
+Administrador: Acceso total a todas las funciones, incluyendo gestión de usuarios y reportes.
+
+Vendedor: Acceso limitado a la realización de ventas y gestión de inventario básico.
+
+3. Módulos del Sistema
+3.1. Gestión de Inventario
+Este módulo permite mantener el control preciso de la mercancía.
+
+Productos: Registro de artículos mediante códigos de barras únicos, precios de compra/venta y control de stock.
+
+Categorías: Organización de productos para facilitar la búsqueda y reportes.
+
+Entradas de Mercancía: Registro de nuevas adquisiciones vinculadas a proveedores específicos.
+
+3.2. Gestión de Proveedores
+Permite almacenar información detallada de los proveedores, incluyendo nombre de la empresa, contacto y teléfono, facilitando la comunicación para la reposición de stock.
+
+3.3. Módulo de Ventas
+Es el núcleo operativo del sistema.
+
+Registro de Ventas: Permite generar transacciones vinculadas a un cliente, un usuario (vendedor) y un método de pago específico.
+
+Detalle de Ventas: Sistema automatizado que registra qué productos se vendieron, en qué cantidad y a qué precio unitario en cada transacción.
+
+Clientes: Base de datos para registrar la información de contacto y DNI/RFC de los clientes recurrentes.
+
+3.4. Administración y Caja
+Métodos de Pago: Gestión de las formas en que el cliente paga (ej. efectivo, tarjeta, transferencia).
+
+Arqueos de Caja: Registro diario de los montos iniciales y finales de caja, asegurando la transparencia en el flujo de efectivo al cerrar el turno.
+
+4. Flujos de Trabajo Comunes
+¿Cómo realizar una venta?
+Identifique o registre al Cliente en el módulo correspondiente.
+
+Agregue los Productos deseados a la orden.
+
+Seleccione el Método de Pago.
+
+Confirme la venta; el sistema reducirá automáticamente el stock del producto y guardará el detalle de la operación.
+
+¿Cómo registrar nueva mercancía?
+Seleccione el producto en el catálogo.
+
+Diríjase a la sección de Entradas de Inventario.
+
+Indique el proveedor y la cantidad recibida.
+
+El sistema actualizará el campo stock_actual en la tabla de productos.
+
+5. Soporte y Seguridad
+Integridad de Datos: El sistema utiliza motores de base de datos robustos para asegurar que, al borrar un cliente o proveedor, las ventas históricas no se pierdan, sino que se gestionen correctamente mediante reglas de integridad referencial.
+
+Seguridad: Las contraseñas de los usuarios están protegidas y el acceso está restringido por roles.
