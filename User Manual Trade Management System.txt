@@ -1,0 +1,63 @@
+User Manual: Trade Management System
+1. Introduction
+The Trade Management System is an all-in-one tool designed for commercial management. It allows for controlling product flow, managing clients, recording detailed sales, and supervising daily cash reconciliation.
+
+2. Login
+The system uses role-based access control to ensure security.
+
+Available Roles:
+
+Administrator: Full access to all features, including user management and reports.
+
+Salesperson: Limited access to performing sales and basic inventory management.
+
+3. System Modules
+3.1. Inventory Management
+This module allows you to maintain precise control over merchandise.
+
+Products: Registration of items using unique barcodes, purchase/sale prices, and stock control.
+
+Categories: Organization of products to facilitate searches and reporting.
+
+Merchandise Entries: Registration of new acquisitions linked to specific suppliers.
+
+3.2. Supplier Management
+Allows for storing detailed information about suppliers, including company name, contact, and phone number, facilitating communication for stock replenishment.
+
+3.3. Sales Module
+This is the operational core of the system.
+
+Sales Recording: Allows generating transactions linked to a client, a user (salesperson), and a specific payment method.
+
+Sales Details: Automated system that records which products were sold, in what quantity, and at what unit price for each transaction.
+
+Clients: Database to register contact information and IDs/tax numbers of recurring clients.
+
+3.4. Administration and Cash
+Payment Methods: Management of the ways a client pays (e.g., cash, credit card, bank transfer).
+
+Cash Reconciliation: Daily recording of initial and final cash amounts, ensuring transparency in cash flow when closing a shift.
+
+4. Common Workflows
+How to perform a sale?
+Identify or register the Client in the corresponding module.
+
+Add the desired Products to the order.
+
+Select the Payment Method.
+
+Confirm the sale; the system will automatically reduce the product stock and save the operation details.
+
+How to register new merchandise?
+Select the product in the catalog.
+
+Go to the Merchandise Entries section.
+
+Indicate the supplier and the quantity received.
+
+The system will update the stock_actual field in the products table.
+
+5. Support and Security
+Data Integrity: The system uses robust database engines to ensure that when a client or supplier is deleted, historical sales are not lost but are handled correctly through referential integrity rules.
+
+Security: User passwords are encrypted, and access is restricted by roles.
