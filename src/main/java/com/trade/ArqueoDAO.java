@@ -18,7 +18,8 @@ public class ArqueoDAO {
     }
 
     public boolean cerrarCaja(int idArqueo, double montoFinal) {
-        String sql = "UPDATE arqueos_caja SET monto_final = ? WHERE id = ?";
+        // Se actualiza el monto final y se guarda el momento exacto del cierre
+        String sql = "UPDATE arqueos_caja SET monto_final = ?, fecha_cierre = NOW() WHERE id = ?";
         try (Connection con = TradeManagementSystem.getConexion(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDouble(1, montoFinal);
             ps.setInt(2, idArqueo);

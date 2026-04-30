@@ -1,147 +1,132 @@
 package com.trade.view;
 
 import com.trade.ArqueoDAO;
-import com.trade.model.Arqueo;
+import com.trade.VentaDAO;
+import com.trade.model.ReporteVenta; // Asegúrate de tener esta clase DTO
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 
 public class ArqueoFrame extends JFrame {
 
-    private JTextField txtMontoInicial, txtUsuario;
-    private JButton btnAbrir, btnCerrar;
+    private JLabel lblTotalVentas;
+    private JTextField txtIdArqueo;
+    private JButton btnCerrarCaja;
+    private JTable tablaReporte;
+    private DefaultTableModel modeloTabla;
+    
+    private VentaDAO ventaDAO;
     private ArqueoDAO arqueoDAO;
-    private int idUsuarioLogueado = 1;
 
     public ArqueoFrame() {
+        ventaDAO = new VentaDAO();
         arqueoDAO = new ArqueoDAO();
-        this.getContentPane().setLayout(new GridBagLayout());
+        
+        setTitle("Control de Arqueo y Reporte Detallado");
+        setSize(900, 600); // Tamaño mayor para mostrar la tabla
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout()); // Layout más flexible para combinar tabla y controles
         
         initComponents();
-        configurarVentana();
-    }
-
-    private void configurarVentana() {
-        setTitle("Control de Arqueo de Caja");
-        setSize(400, 250);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setResizable(false);
+        cargarVentasDiarias();
+        cargarTablaReporte(); // Ejecuta tu consulta SQL
     }
 
     private void initComponents() {
+        // Panel Superior para controles de Cierre
+        JPanel panelControles = new JPanel(new GridBagLayout());
+        panelControles.setBorder(BorderFactory.createTitledBorder("Gestión de Caja"));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        // --- Filtro de números ---
-        DocumentFilter soloNumeros = new SoloNumerosFilter();
-
-        // --- Fila 0: Usuario ---
+        // -- Elementos de Control --
         gbc.gridx = 0; gbc.gridy = 0;
-        add(new JLabel("Usuario:"), gbc);
+        panelControles.add(new JLabel("Total Ventas del Día:"), gbc);
         
-        txtUsuario = new JTextField("Administrador", 15);
-        txtUsuario.setEditable(false);
+        lblTotalVentas = new JLabel("$ 0.00");
+        lblTotalVentas.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTotalVentas.setForeground(Color.BLUE);
         gbc.gridx = 1;
-        add(txtUsuario, gbc);
+        panelControles.add(lblTotalVentas, gbc);
 
-        // --- Fila 1: Monto Inicial ---
         gbc.gridx = 0; gbc.gridy = 1;
-        add(new JLabel("Monto Inicial:"), gbc);
-        
-        txtMontoInicial = new JTextField(10);
-        ((AbstractDocument) txtMontoInicial.getDocument()).setDocumentFilter(soloNumeros);
+        panelControles.add(new JLabel("ID del Arqueo:"), gbc);
+
+        txtIdArqueo = new JTextField(10);
         gbc.gridx = 1;
-        add(txtMontoInicial, gbc);
+        panelControles.add(txtIdArqueo, gbc);
 
-        // --- Fila 2: Botones ---
-        JPanel panelBotones = new JPanel(new FlowLayout());
-        btnAbrir = new JButton("Abrir Caja");
-        btnAbrir.setBackground(new Color(40, 167, 69));
-        btnAbrir.setForeground(Color.WHITE);
-        
-        btnCerrar = new JButton("Cerrar Caja");
-        btnCerrar.setEnabled(false);
-        btnCerrar.setBackground(new Color(220, 53, 69));
-        btnCerrar.setForeground(Color.WHITE);
-        
-        panelBotones.add(btnAbrir);
-        panelBotones.add(btnCerrar);
-        
+        btnCerrarCaja = new JButton("Cerrar Caja");
+        btnCerrarCaja.addActionListener(e -> realizarCierre());
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        add(panelBotones, gbc);
+        panelControles.add(btnCerrarCaja, gbc);
 
-        // Eventos
-        btnAbrir.addActionListener(e -> accionAbrir());
-        btnCerrar.addActionListener(e -> accionCerrar());
-    }
-
-    private void accionAbrir() {
-        String texto = txtMontoInicial.getText().trim();
-        if (texto.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Debe ingresar un monto.");
-            return;
-        }
-
-        double monto = Double.parseDouble(texto);
-        if (monto <= 0) {
-            JOptionPane.showMessageDialog(this, "El monto debe ser mayor a cero.");
-            return;
-        }
-
-        Arqueo nuevo = new Arqueo();
-        nuevo.setMontoInicial(monto);
-        nuevo.setIdUsuario(idUsuarioLogueado);
-
-        if (arqueoDAO.abrirCaja(nuevo)) {
-            JOptionPane.showMessageDialog(this, "✅ Caja abierta.");
-            btnAbrir.setEnabled(false);
-            txtMontoInicial.setEditable(false);
-            btnCerrar.setEnabled(true);
-        }
-    }
-
-    private void accionCerrar() {
-        // Creamos un diálogo personalizado para asegurar que NO acepten letras
-        JTextField txtMontoFinal = new JTextField(10);
-        ((AbstractDocument) txtMontoFinal.getDocument()).setDocumentFilter(new SoloNumerosFilter());
+        // -- Configuración de la Tabla --
+        String[] columnas = {"Fecha", "Folio", "Cliente", "Vendedor", "Producto", "Cant", "P. Unit", "Subtotal", "Metodo"};
+        modeloTabla = new DefaultTableModel(columnas, 0);
+        tablaReporte = new JTable(modeloTabla);
         
-        Object[] message = {"Ingrese el monto final:", txtMontoFinal};
-        int option = JOptionPane.showConfirmDialog(this, message, "Cierre de Caja", JOptionPane.OK_CANCEL_OPTION);
+        // Agregar componentes al Frame
+        add(panelControles, BorderLayout.NORTH);
+        add(new JScrollPane(tablaReporte), BorderLayout.CENTER);
+    }
 
-        if (option == JOptionPane.OK_OPTION) {
-            String texto = txtMontoFinal.getText().trim();
-            if (!texto.isEmpty()) {
-                double montoF = Double.parseDouble(texto);
-                if (arqueoDAO.cerrarCaja(1, montoF)) {
-                    JOptionPane.showMessageDialog(this, "🏁 Caja cerrada.");
+    private void cargarTablaReporte() {
+        modeloTabla.setRowCount(0); // Limpiar tabla
+        List<ReporteVenta> lista = ventaDAO.obtenerReporteDetallado(); // Tu consulta SQL
+        
+        for (ReporteVenta r : lista) {
+            Object[] fila = {
+                r.getFecha(),
+                r.getFolioVenta(),
+                r.getCliente(),
+                r.getVendedor(),
+                r.getProducto(),
+                r.getCantidad(),
+                String.format("%.2f", r.getPrecioUnitario()),
+                String.format("%.2f", r.getSubtotal()),
+                r.getMetodoPago()
+            };
+            modeloTabla.addRow(fila);
+        }
+    }
+
+    private void cargarVentasDiarias() {
+        double total = ventaDAO.obtenerTotalVentasDelDia();
+        lblTotalVentas.setText(String.format("$ %.2f", total));
+    }
+
+    private void realizarCierre() {
+        try {
+            if (txtIdArqueo.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingresa el ID del arqueo.");
+                return;
+            }
+
+            int idArqueo = Integer.parseInt(txtIdArqueo.getText());
+            double totalHoy = ventaDAO.obtenerTotalVentasDelDia();
+
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                    "¿Cerrar caja con monto: $ " + totalHoy + "?", 
+                    "Confirmar Cierre", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (arqueoDAO.cerrarCaja(idArqueo, totalHoy)) {
+                    JOptionPane.showMessageDialog(this, "Caja cerrada correctamente.");
                     this.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Error. Verifica el ID.");
                 }
             }
-        }
-    }
-
-    // --- FILTRO REUTILIZABLE (CLASE INTERNA) ---
-    private class SoloNumerosFilter extends DocumentFilter {
-        @Override
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            if (string.matches("[0-9]*\\.?[0-9]*")) {
-                super.insertString(fb, offset, string, attr);
-            }
-        }
-
-        @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-            String currentText = fb.getDocument().getText(0, fb.getDocument().getLength());
-            String newText = currentText.substring(0, offset) + text + currentText.substring(offset + length);
-            if (newText.matches("[0-9]*\\.?[0-9]*")) {
-                super.replace(fb, offset, length, text, attrs);
-            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "ID inválido.");
         }
     }
 
     public static void main(String[] args) {
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignored) {}
         SwingUtilities.invokeLater(() -> new ArqueoFrame().setVisible(true));
     }
 }
